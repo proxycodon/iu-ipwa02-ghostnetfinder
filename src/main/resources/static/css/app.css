@@ -1,0 +1,8 @@
+body { font-family: system-ui, sans-serif; margin: 2rem; }
+h1 { margin-bottom: 1rem; } 
+table { border-collapse: collapse; width: 100%; } 
+th, td { border: 1px solid #ddd; padding: .5rem; } 
+th { background: #f5f5f5; text-align: left; } 
+button { padding: .4rem .8rem; } 
+nav a, nav form { margin-right: .8rem; } 
+label { display:block; margin:.5rem 0; }

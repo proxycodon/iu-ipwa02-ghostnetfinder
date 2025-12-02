@@ -1,0 +1,71 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>All ghost nets</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+<header>
+    <h1>All ghost nets</h1>
+
+    <!-- Hauptnavigation mit Login-/Logout-Bereich -->
+    <nav>
+        <a th:href="@{/}">Home</a>
+
+        <!-- Links für nicht eingeloggte Nutzer -->
+        <span sec:authorize="isAnonymous()">
+            <a th:href="@{/login}">Login</a>
+            <a th:href="@{/register}">Register</a>
+        </span>
+
+        <!-- Bereich für eingeloggte Nutzer -->
+        <span sec:authorize="isAuthenticated()">
+            Signed in as <b sec:authentication="name"></b>
+            <a th:href="@{/my-nets}">My assigned nets</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit">Logout</button>
+            </form>
+        </span>
+    </nav>
+</header>
+
+<!-- Zurück-Link zur Startseite -->
+<p><a th:href="@{/}">← Back</a></p>
+
+<!-- Gesamtübersicht aller Netze, unabhängig vom Status -->
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Coordinates</th>
+        <th>Status</th>
+        <th>Reported by</th>
+        <th>Salvager</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <!-- Iteration über alle Netze, bereitgestellt vom AllNetsController -->
+    <tr th:each="n : ${nets}">
+        <td th:text="${n.title}"></td>
+        <td th:text="${n.latitude + ', ' + n.longitude}"></td>
+
+        <!-- Status im Lebenszyklus (REPORTED, PENDING, SALVAGED, LOST) -->
+        <td th:text="${n.status}"></td>
+
+        <!-- Meldende Person oder "anonymous" -->
+        <td th:text="${n.reportedBy}"></td>
+
+        <!-- Zugeordneter Salvager oder "-" falls noch keiner zugeordnet ist -->
+        <td th:text="${n.assignedSalvagerUsername ?: '-'}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

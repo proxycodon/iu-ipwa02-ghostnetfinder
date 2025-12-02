@@ -1,0 +1,87 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>All nets</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<header>
+  <h1>All nets</h1>
+
+  <!-- Navigation: globale Übersicht + Zugang zu Formular und eigenen Netzen -->
+  <nav>
+    <a th:href="@{/}">Home</a>
+    <a th:href="@{/nets/new}">Report new net</a>
+
+    <span sec:authorize="isAnonymous()">
+      <a th:href="@{/login}">Login</a>
+      <a th:href="@{/register}">Register</a>
+    </span>
+
+    <span sec:authorize="isAuthenticated()">
+      Signed in as <b sec:authentication="name"></b>
+      <a th:href="@{/my-nets}">My assigned nets</a>
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Logout</button>
+      </form>
+    </span>
+  </nav>
+</header>
+
+<!-- Zurück-Link zur Startseite -->
+<p><a th:href="@{/}">← Back</a></p>
+
+<!-- Gesamtübersicht aller Netze inkl. Status und optionalem Salvager -->
+<table>
+  <thead>
+  <tr>
+    <th>Title</th>
+    <th>Coordinates</th>
+    <th>Status</th>
+    <th>Reported by</th>
+    <th>Salvager</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  <!-- Eintrag pro Netz (bereitgestellt vom NetController) -->
+  <tr th:each="n : ${nets}">
+    <td th:text="${n.title}">Title</td>
+    <td th:text="${n.latitude + ', ' + n.longitude}">0, 0</td>
+    <!-- Status-Enum (REPORTED, PENDING, SALVAGED, LOST) -->
+    <td th:text="${n.status}">REPORTED</td>
+    <td th:text="${n.reportedBy}">anonymous</td>
+    <!-- Salvager-Name oder "-" falls noch keiner zugeordnet -->
+    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : '-'}">-</td>
+
+    <td>
+      <!-- Claim nur, wenn Status REPORTED und noch kein Salvager eingetragen ist -->
+      <form sec:authorize="isAuthenticated()"
+            th:if="${n.status.name() == 'REPORTED' and n.assignedSalvagerUsername == null}"
+            th:action="@{'/nets/claim/' + ${n.id}}"
+            method="post"
+            style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Claim</button>
+      </form>
+
+      <!-- Mark lost nur, wenn Status nicht bereits LOST ist -->
+      <form sec:authorize="isAuthenticated()"
+            th:if="${n.status.name() != 'LOST'}"
+            th:action="@{'/nets/mark-lost/' + ${n.id}}"
+            method="post"
+            style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Mark as lost</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+# Maven build output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+hs_err_pid*
+replay_pid*
+
+# Eclipse
+.project
+.classpath
+.settings/
+.springBeans
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# H2 file-based DBs
+*.h2.db
+*.mv.db
+*.trace.db
+
+# Backup / temp
+*.swp
+*.swo
+*~
