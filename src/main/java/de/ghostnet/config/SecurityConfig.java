@@ -32,33 +32,39 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                // Öffentliche Seiten (Landing Page, Listen, Registrierung, statische Inhalte)
-                .requestMatchers("/", "/nets", "/nets/new", "/css/**", "/register", "/login").permitAll()
+                // Statische Inhalte immer erlauben
+                .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
+
+                // Öffentliche Seiten (Landing Page, Listen, Registrierung, Login)
+                .requestMatchers("/", "/nets", "/nets/new", "/register", "/login").permitAll()
+
                 // Neue Netze dürfen anonym gemeldet werden
                 .requestMatchers(HttpMethod.POST, "/nets").permitAll()
+
                 // Aktionen, die den Status eines Netzes ändern, erfordern Login
                 .requestMatchers("/nets/claim/**",
-                                 "/nets/mark-retrieved/**",
-                                 "/nets/mark-lost/**").authenticated()
+                                "/nets/mark-retrieved/**",
+                                "/nets/mark-lost/**").authenticated()
+
                 // Persönliche Übersicht der übernommenen Netze
                 .requestMatchers("/my-nets").authenticated()
+
                 // Öffentliche Gesamtansicht aller Netze (falls genutzt)
                 .requestMatchers("/nets/all").permitAll()
+
                 // Alles andere ist standardmäßig verboten (secure by default)
                 .anyRequest().denyAll()
             )
-            // Eigene Login-Seite unter /login verwenden
             .formLogin(form -> form
                 .loginPage("/login")
                 .permitAll()
             )
-            // Standard-Logout-Konfiguration (POST /logout)
             .logout(Customizer.withDefaults())
-            // CSRF-Schutz für Formular-POSTs aktivieren
             .csrf(Customizer.withDefaults());
 
         return http.build();
     }
+
 
     /**
      * Lädt Benutzer aus der Datenbank und mappt sie auf das

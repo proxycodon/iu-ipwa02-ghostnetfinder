@@ -1,12 +1,26 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <title>Sign in</title>
+  <title>Ghost Net Finder - Sign in</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
+
+  <!-- Syne Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<h1>Sign in</h1>
+
+<!-- Gemeinsamer Header -->
+<div th:replace="fragments/header :: siteHeader"></div>
+
+<h2>Sign in</h2>
 
 <!--
   Login-Formular für Spring Security.
@@ -33,5 +47,6 @@
 </p>
 
 <p><a th:href="@{/}">Back to home</a></p>
+
 </body>
 </html>

@@ -3,65 +3,63 @@
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 
 <head>
-    <meta charset="UTF-8">
-    <title>My Assigned Nets</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}">
+  <meta charset="UTF-8">
+  <title>Ghost Net Finder - My assigned nets</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
+
+  <!-- Syne Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 
 <body>
-<header>
-    <h1>My assigned nets</h1>
 
-    <!-- Einfache Navigation zurück zur Startseite + Logout für eingeloggte Nutzer -->
-    <nav>
-        <a th:href="@{/}">Home</a>
+<!-- Gemeinsamer Header -->
+<div th:replace="fragments/header :: siteHeader"></div>
 
-        <span sec:authorize="isAuthenticated()">
-            Signed in as <b sec:authentication="name"></b>
-            <form th:action="@{/logout}" method="post" style="display:inline">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button type="submit">Logout</button>
-            </form>
-        </span>
-    </nav>
-</header>
+<h2>My assigned nets</h2>
 
 <!-- Persönliche Übersicht: alle Netze, die dem aktuellen Salvager zugeordnet sind -->
 <table>
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th>Coordinates</th>
-        <th>Status</th>
-        <th>Reported by</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
+  <thead>
+  <tr>
+    <th>Title</th>
+    <th>Coordinates</th>
+    <th>Status</th>
+    <th>Reported by</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
 
-    <tbody>
-    <!-- assignedNets wird im MyNetsController aus dem Service geladen -->
-    <tr th:each="n : ${assignedNets}">
-        <td th:text="${n.title}"></td>
-        <td th:text="${n.latitude + ', ' + n.longitude}"></td>
-        <!-- Status-Enum (REPORTED, PENDING, SALVAGED, LOST) -->
-        <td th:text="${n.status}"></td>
-        <td th:text="${n.reportedBy}"></td>
+  <tbody>
+  <!-- assignedNets wird im MyNetsController aus dem Service geladen -->
+  <tr th:each="n : ${assignedNets}">
+    <td th:text="${n.title}"></td>
+    <td th:text="${n.latitude + ', ' + n.longitude}"></td>
+    <!-- Status-Enum (REPORTED, PENDING, SALVAGED, LOST) -->
+    <td th:text="${n.status}"></td>
+    <td th:text="${n.reportedBy}"></td>
 
-        <td>
-            <!-- Netz als geborgen markieren -->
-            <form th:action="@{'/nets/mark-retrieved/' + ${n.id}}" method="post" style="display:inline">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button type="submit">Mark retrieved</button>
-            </form>
+    <td>
+      <!-- Netz als geborgen markieren -->
+      <form th:action="@{'/nets/mark-retrieved/' + ${n.id}}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Mark retrieved</button>
+      </form>
 
-            <!-- Netz als verschollen markieren -->
-            <form th:action="@{'/nets/mark-lost/' + ${n.id}}" method="post" style="display:inline">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button type="submit">Mark lost</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
+      <!-- Netz als verschollen markieren -->
+      <form th:action="@{'/nets/mark-lost/' + ${n.id}}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Mark lost</button>
+      </form>
+    </td>
+  </tr>
+  </tbody>
 </table>
 
 </body>

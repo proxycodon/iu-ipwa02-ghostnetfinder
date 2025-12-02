@@ -1,0 +1,47 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+  <!-- leer; nur für Namespaces -->
+</head>
+<body>
+
+<header th:fragment="siteHeader">
+  <div class="brand">
+    <!-- Nur das Logo ist klickbar -->
+    <a th:href="@{/}" class="brand-logo-link">
+      <img th:src="@{/img/ghost-net-finder-high-resolution-logo-transparent.png}"
+           alt="Ghost Net Finder Logo"
+           class="logo">
+    </a>
+    <h1>Ghost Net Finder</h1>
+  </div>
+
+  <!-- Hauptnavigation: abhängig vom Login-Status -->
+  <nav>
+    <!-- Übersicht aller Netze (für alle sichtbar) -->
+    <a th:href="@{/nets}">All nets</a>
+
+    <!-- Meldung eines neuen Netzes (öffentlich erreichbar) -->
+    <a th:href="@{/nets/new}">Report new net</a>
+
+    <!-- Links für nicht eingeloggte Nutzer -->
+    <span sec:authorize="isAnonymous()">
+      <a th:href="@{/login}">Login</a>
+      <a th:href="@{/register}">Register</a>
+    </span>
+
+    <!-- Bereich für eingeloggte Nutzer -->
+    <span sec:authorize="isAuthenticated()">
+      Signed in as <b sec:authentication="name"></b>
+      <a th:href="@{/my-nets}">My assigned nets</a>
+      <form th:action="@{/logout}" method="post" style="display:inline">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">Logout</button>
+      </form>
+    </span>
+  </nav>
+</header>
+
+</body>
+</html>
