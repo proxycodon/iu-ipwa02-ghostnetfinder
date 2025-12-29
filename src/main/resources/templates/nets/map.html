@@ -1,0 +1,90 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Ghost Net Finder - Map</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
+
+  <!-- Syne Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+  <style>
+    /* Map-Container */
+    #map {
+      height: 500px;
+      margin-top: 1rem;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Gemeinsamer Header -->
+<div th:replace="fragments/header :: siteHeader"></div>
+
+<h2>Ghost nets map</h2>
+
+<p>
+  This map shows all reported ghost nets based on their coordinates.
+</p>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin="">
+</script>
+
+<!-- Net-Daten aus Thymeleaf ins JS schieben -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+  // einfache JS-Array-Repräsentation deiner Netze
+  const nets = /*[[${nets}]]*/ [];
+
+  // Map initialisieren (Weltkarte, leicht rausgezoomt)
+  const map = L.map('map').setView([20, 0], 2);
+
+  // OpenStreetMap-Tiles hinzufügen
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Marker für jedes Netz setzen – wir gehen davon aus, dass GhostNet latitude, longitude, title hat
+  nets.forEach(net => {
+    if (net.latitude != null && net.longitude != null) {
+      const marker = L.marker([net.latitude, net.longitude]).addTo(map);
+      let popupHtml = `<strong>${net.title ?? 'Ghost net'}</strong><br/>` +
+                      `Lat: ${net.latitude}, Lon: ${net.longitude}`;
+      if (net.status) {
+        popupHtml += `<br/>Status: ${net.status}`;
+      }
+      if (net.reportedBy) {
+        popupHtml += `<br/>Reported by: ${net.reportedBy}`;
+      }
+      marker.bindPopup(popupHtml);
+    }
+  });
+
+/*]]>*/
+</script>
+
+</body>
+</html>

@@ -35,8 +35,8 @@ public class SecurityConfig {
                 // Statische Inhalte immer erlauben
                 .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
 
-                // Öffentliche Seiten (Landing Page, Listen, Registrierung, Login)
-                .requestMatchers("/", "/nets", "/nets/new", "/register", "/login").permitAll()
+                // Öffentliche Seiten (Landing Page, Listen, Registrierung, Login, Map)
+                .requestMatchers("/", "/nets", "/nets/new", "/nets/all", "/nets/map", "/register", "/login").permitAll()
 
                 // Neue Netze dürfen anonym gemeldet werden
                 .requestMatchers(HttpMethod.POST, "/nets").permitAll()

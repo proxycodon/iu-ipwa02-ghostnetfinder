@@ -42,8 +42,10 @@ public class RegistrationController {
                            Model model) {
 
         // Einfache Plausibilitätsprüfung: beide Passwortfelder müssen übereinstimmen
-        if (!form.getPassword().equals(form.getConfirmPassword())) {
-            br.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
+        if (form.getPassword() != null && form.getConfirmPassword() != null
+                && !form.getPassword().equals(form.getConfirmPassword())) {
+            // Keine harte Text-Message im Code: Text kommt aus messages.properties
+            br.rejectValue("confirmPassword", "mismatch");
         }
 
         // Bei Validierungsfehlern Formular erneut anzeigen
@@ -54,13 +56,13 @@ public class RegistrationController {
         try {
             userService.registerReporter(form.getUsername(), form.getPassword());
         } catch (IllegalArgumentException e) {
-            // Benutzername bereits vergeben → Fehler am Feld anzeigen
-            br.rejectValue("username", "exists", e.getMessage());
+            // Benutzername bereits vergeben → kontrollierte, konsistente UI-Message via messages.properties
+            br.rejectValue("username", "exists");
             return "register";
         }
 
         // Nach erfolgreicher Registrierung zur Login-Seite umleiten
-        model.addAttribute("registered", true);
-        return "redirect:/login";
+        // Hinweis: model.addAttribute(...) würde beim Redirect verloren gehen.
+        return "redirect:/login?registered";
     }
 }

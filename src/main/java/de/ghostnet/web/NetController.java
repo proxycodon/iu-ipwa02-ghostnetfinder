@@ -29,6 +29,15 @@ public class NetController {
         return "nets/list";
     }
 
+    /**
+     * World map with all ghost nets as markers.
+     */
+    @GetMapping("/map")
+    public String map(Model model) {
+        model.addAttribute("nets", service.findAll());
+        return "nets/map"; // -> templates/nets/map.html
+    }
+
     @GetMapping("/new")
     public String form(Model model) {
         model.addAttribute("net", new GhostNet());

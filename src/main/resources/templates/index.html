@@ -14,6 +14,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" th:href="@{/css/app.css}">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
 </head>
 
 <body>
@@ -21,9 +27,15 @@
 <!-- Header-Fragment einbinden -->
 <div th:replace="fragments/header :: siteHeader"></div>
 
-<h2>Open nets</h2>
+<!-- ===== Weltkarte mit offenen Netzen ===== -->
+<h2>Open Nets</h2>
+<p>
+  The map shows all currently open ghost nets. Click a marker to see details and jump to the net in the list below.
+</p>
 
-<!-- Tabelle der aktuell offenen Netze -->
+<div id="map"></div>
+
+<!-- ===== Tabelle der aktuell offenen Netze ===== -->
 <table>
   <thead>
   <tr>
@@ -35,7 +47,8 @@
   </tr>
   </thead>
   <tbody>
-  <tr th:each="n : ${openNets}">
+  <tr th:each="n : ${openNets}"
+      th:id="${'net-row-' + n.id}">
     <td th:text="${n.title}">Title</td>
     <td th:text="${n.latitude + ', ' + n.longitude}">53.55, 9.99</td>
     <td th:text="${n.reportedBy}">anonymous</td>
@@ -64,6 +77,84 @@
   Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.
 </p>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin="">
+</script>
+
+<!-- Map-Logik + Scroll-to-Row -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+  // Offene Netze aus dem Model als JS-Array
+  const openNets = /*[[${openNets}]]*/ [];
+
+  // Map initialisieren – Start in der Nordsee als Default
+  const map = L.map('map').setView([56, 4], 4);
+
+  // OpenStreetMap Tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Fallback: wenn keine offenen Netze vorhanden sind,
+  // einen Platzhalter-Marker in der Nordsee setzen
+  if (!openNets || openNets.length === 0) {
+    L.marker([56.5, 4.0])
+      .addTo(map)
+      .bindPopup('<strong>Example ghost net</strong><br/>North Sea placeholder');
+  } else {
+    // Bounds, um die Karte auf alle Marker zu zoomen
+    const bounds = [];
+
+    openNets.forEach(net => {
+      if (net.latitude != null && net.longitude != null) {
+        const coords = [net.latitude, net.longitude];
+        bounds.push(coords);
+
+        const title = net.title || 'Ghost net';
+        const status = net.status || 'OPEN';
+        const reporter = net.reportedBy || 'anonymous';
+
+        const popupHtml =
+          `<strong>${title}</strong><br/>` +
+          `Lat: ${net.latitude}, Lon: ${net.longitude}<br/>` +
+          `Status: ${status}<br/>` +
+          `Reported by: ${reporter}<br/><br/>` +
+          `<button type="button" onclick="scrollToNet(${net.id})">Go to net</button>`;
+
+        L.marker(coords)
+          .addTo(map)
+          .bindPopup(popupHtml);
+      }
+    });
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }
+
+  // Scrollt zur Tabellenzeile des Netzes und hebt sie kurz hervor
+  window.scrollToNet = function (netId) {
+    const rowId = 'net-row-' + netId;
+    const row = document.getElementById(rowId);
+    if (!row) {
+      return;
+    }
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    row.classList.add('highlight-row');
+    setTimeout(() => {
+      row.classList.remove('highlight-row');
+    }, 2000);
+  };
+
+/*]]>*/
+</script>
 
 </body>
 </html>

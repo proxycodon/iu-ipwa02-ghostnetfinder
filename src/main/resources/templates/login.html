@@ -22,10 +22,24 @@
 
 <h2>Sign in</h2>
 
+<!-- Erfolgreiche Registrierung -->
+<p th:if="${param.registered}" class="success">
+  Account created successfully. You can now sign in.
+</p>
+
+<!-- Login-Fehler (Spring Security: ?error) -->
+<p th:if="${param.error}" class="error">
+  Invalid username or password.
+</p>
+
+<!-- Logout-Hinweis (optional, falls konfiguriert) -->
+<p th:if="${param.logout}" class="info">
+  You have been signed out.
+</p>
+
 <!--
   Login-Formular für Spring Security.
-  Verwendet die Standard-Parameter "username" und "password",
-  die in SecurityConfig/formLogin() erwartet werden.
+  Verwendet die Standard-Parameter "username" und "password".
 -->
 <form th:action="@{/login}" method="post">
   <label>Username<br>
@@ -36,7 +50,7 @@
     <input type="password" name="password" required>
   </label>
 
-  <!-- CSRF-Token, wird von Spring automatisch ins Model gelegt -->
+  <!-- CSRF-Token -->
   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
   <button type="submit">Login</button>
 </form>

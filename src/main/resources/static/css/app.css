@@ -1,9 +1,20 @@
 body { 
   font-family: system-ui, sans-serif; 
-  margin: 2rem; 
-  background: #1b00bf;     /* dein neues Blau */
-  color: #f9fafb;          /* helles Weiß/Grau für Text */
+  margin: 0;
+  background: #1b00bf;
+  color: #f9fafb;
+
+  /* Horizontaler Abstand in % der Bildschirmbreite */
+  padding: 2rem 4vw;
 }
+
+/* Für sehr kleine Screens Padding nicht zu groß werden lassen */
+@media (max-width: 720px) {
+  body {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
 
 /* Header mit Logo + Titel nebeneinander */
 header {
@@ -69,25 +80,33 @@ nav a:hover {
 
 /* Tabelle als helle „Karte“ auf dunklem Hintergrund */
 table { 
-  border-collapse: collapse; 
+  border-collapse: separate;     /* statt collapse */
+  border-spacing: 0;             /* damit keine Lücken entstehen */
   width: 100%; 
-  background: #ffffff;     /* weißer Hintergrund für gute Lesbarkeit */
-  color: #111827;          /* dunkler Text in der Tabelle */
+  background: #ffffff;
+  color: #111827;
   border-radius: .5rem;
-  overflow: hidden;        /* runde Ecken sichtbar machen */
+  overflow: hidden;              /* runde Ecken gelten jetzt */
   margin-top: 1rem;
+  border: 1px solid #e5e7eb;     /* Rahmen nur außen */
 } 
 
 th, td { 
-  border: 1px solid #e5e7eb; 
+  border: none;                  /* keine Einzel-Rahmen mehr */
+  border-bottom: 1px solid #e5e7eb; 
   padding: .5rem; 
 } 
 
 /* Tabellen-Header (Spaltenüberschriften) */
 th { 
-  background: #e5e7eb;     /* helles Grau */
+  background: #e5e7eb;
   text-align: left; 
   font-weight: 600;
+}
+
+/* Unterste Zeile ohne extra Linie */
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 /* Buttons etwas kontrastreich */
@@ -108,4 +127,51 @@ button:hover {
 label { 
   display:block; 
   margin:.5rem 0; 
+}
+
+/* Map-Container auf der Startseite */
+#map {
+  height: 500px;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+/* Hervorhebung der Tabellezeile, wenn aus der Map angesprungen */
+.highlight-row {
+  background-color: rgba(56, 189, 248, 0.18); /* soft accent */
+  transition: background-color 0.4s ease;
+}
+
+/* Basisstil für alle Messages */
+.success,
+.error,
+.info {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Erfolgsnachricht (z. B. Registrierung erfolgreich) */
+.success {
+  background: rgba(34, 197, 94, 0.15);   /* soft green */
+  color: #dcfce7;
+  border-left: 4px solid #22c55e;
+}
+
+/* Fehlermeldung (z. B. Login fehlgeschlagen) */
+.error {
+  background: rgba(239, 68, 68, 0.15);   /* soft red */
+  color: #fee2e2;
+  border-left: 4px solid #ef4444;
+}
+
+/* Info-Hinweis (z. B. Logout erfolgreich) */
+.info {
+  background: rgba(56, 189, 248, 0.15);  /* soft cyan / accent */
+  color: #e0f2fe;
+  border-left: 4px solid #38bdf8;
 }
