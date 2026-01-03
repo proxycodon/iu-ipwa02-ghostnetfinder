@@ -5,10 +5,7 @@
   <meta charset="UTF-8">
   <title>Ghost Net Finder - All nets</title>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
-
-  <!-- Syne Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
@@ -17,38 +14,34 @@
 </head>
 <body>
 
-<!-- Gemeinsamer Header -->
-<div th:replace="fragments/header :: siteHeader"></div>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <h2>All nets</h2>
 
-<!-- Gesamtübersicht aller Netze inkl. Status und optionalem Salvager -->
 <table>
   <thead>
   <tr>
-    <th>Title</th>
+    <th>ID</th>
     <th>Coordinates</th>
     <th>Status</th>
     <th>Reported by</th>
     <th>Salvager</th>
-    <th>Action</th>
+    <th>Reported at</th>
+    <th sec:authorize="isAuthenticated()">Action</th>
   </tr>
   </thead>
+
   <tbody>
-  <!-- Eintrag pro Netz (bereitgestellt vom NetController) -->
   <tr th:each="n : ${nets}">
-    <td th:text="${n.title}">Title</td>
+    <td th:text="${n.id}">1001</td>
     <td th:text="${n.latitude + ', ' + n.longitude}">0, 0</td>
-    <!-- Status-Enum (REPORTED, PENDING, SALVAGED, LOST) -->
     <td th:text="${n.status}">REPORTED</td>
     <td th:text="${n.reportedBy}">anonymous</td>
-    <!-- Salvager-Name oder "-" falls noch keiner zugeordnet -->
     <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : '-'}">-</td>
+    <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
 
-    <td>
-      <!-- Claim nur, wenn Status REPORTED und noch kein Salvager eingetragen ist -->
-      <form sec:authorize="isAuthenticated()"
-            th:if="${n.status.name() == 'REPORTED' and n.assignedSalvagerUsername == null}"
+    <td sec:authorize="isAuthenticated()">
+      <form th:if="${n.status.name() == 'REPORTED' and n.assignedSalvagerUsername == null}"
             th:action="@{'/nets/claim/' + ${n.id}}"
             method="post"
             style="display:inline">
@@ -56,9 +49,7 @@
         <button type="submit">Claim</button>
       </form>
 
-      <!-- Mark lost nur, wenn Status nicht bereits LOST ist -->
-      <form sec:authorize="isAuthenticated()"
-            th:if="${n.status.name() != 'LOST'}"
+      <form th:if="${n.status.name() != 'LOST'}"
             th:action="@{'/nets/mark-lost/' + ${n.id}}"
             method="post"
             style="display:inline">
@@ -70,7 +61,6 @@
   </tbody>
 </table>
 
-<!-- Hinweis für ausgeloggte Nutzer -->
 <p sec:authorize="isAnonymous()">
   Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.

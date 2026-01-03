@@ -1,27 +1,19 @@
 spring:
   datasource:
-    # In-Memory-H2-Datenbank im PostgreSQL-Kompatibilitätsmodus für lokale Entwicklung
-    url: jdbc:h2:mem:ghostnet;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:./.localdb/ghostnet;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
   jpa:
-    # Open Session in View deaktivieren, um saubere Service-/Repository-Schicht zu erzwingen
     open-in-view: false
     hibernate:
-      # Schema-Verwaltung: update nur für Entwicklung geeignet
-      ddl-auto: update
-    properties:
-      # Formatierte SQL-Ausgabe im Log (bessere Lesbarkeit beim Debuggen)
-      hibernate.format_sql: true
-  thymeleaf:
-    # Template-Caching deaktivieren, damit Änderungen im HTML sofort sichtbar sind
-    cache: false
+      ddl-auto: validate
+
   h2:
     console:
-      # H2-Webkonsole für lokale Entwicklung aktivieren (z.B. unter /h2-console)
       enabled: true
-
-server:
-  # Standard-Port der Anwendung
-  port: 8080

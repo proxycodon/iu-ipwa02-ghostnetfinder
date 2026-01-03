@@ -24,10 +24,10 @@
 
 <body>
 
-<!-- Header-Fragment einbinden -->
-<div th:replace="fragments/header :: siteHeader"></div>
+<!-- Shared Header -->
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
-<!-- ===== Weltkarte mit offenen Netzen ===== -->
+<!-- ===== Map with open nets ===== -->
 <h2>Open Nets</h2>
 <p>
   The map shows all currently open ghost nets. Click a marker to see details and jump to the net in the list below.
@@ -35,35 +35,38 @@
 
 <div id="map"></div>
 
-<!-- ===== Tabelle der aktuell offenen Netze ===== -->
+<!-- ===== Table of currently open nets ===== -->
 <table>
   <thead>
   <tr>
-    <th>Title</th>
+    <th>ID</th>
     <th>Coordinates</th>
+    <th>Estimated size (m²)</th>
+    <th>Status</th>
+    <th>Assigned salvager</th>
     <th>Reported by</th>
-    <!-- Action-Spalte nur für eingeloggte Nutzer -->
+    <th>Reported at</th>
     <th sec:authorize="isAuthenticated()">Action</th>
   </tr>
   </thead>
   <tbody>
   <tr th:each="n : ${openNets}"
       th:id="${'net-row-' + n.id}">
-    <td th:text="${n.title}">Title</td>
-    <td th:text="${n.latitude + ', ' + n.longitude}">53.55, 9.99</td>
+    <td th:text="${n.id}">id</td>
+    <td th:text="${n.latitude + ', ' + n.longitude}">-</td>
+    <td th:text="${n.estimatedSizeM2 != null ? n.estimatedSizeM2 : '-'}">-</td>
+    <td th:text="${n.status}">REPORTED</td>
+    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : 'Unassigned'}">Unassigned</td>
     <td th:text="${n.reportedBy}">anonymous</td>
+    <td th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
 
-    <!-- Buttons nur anzeigen, wenn User eingeloggt ist -->
     <td sec:authorize="isAuthenticated()">
-      <!-- Claim: Netz zur Bergung übernehmen -->
-      <form th:action="@{'/nets/claim/' + ${n.id}}" method="post"
-            style="display:inline">
+      <form th:action="@{'/nets/claim/' + ${n.id}}" method="post" style="display:inline">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit">Claim</button>
       </form>
-      <!-- Mark as lost: Netz als verschollen markieren -->
-      <form th:action="@{'/nets/mark-lost/' + ${n.id}}" method="post"
-            style="display:inline">
+
+      <form th:action="@{'/nets/mark-lost/' + ${n.id}}" method="post" style="display:inline">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit">Mark as lost</button>
       </form>
@@ -72,7 +75,6 @@
   </tbody>
 </table>
 
-<!-- Hinweis für ausgeloggte Nutzer -->
 <p sec:authorize="isAnonymous()">
   Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.
@@ -85,30 +87,24 @@
   crossorigin="">
 </script>
 
-<!-- Map-Logik + Scroll-to-Row -->
+<!-- Map logic + Scroll-to-Row -->
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-  // Offene Netze aus dem Model als JS-Array
   const openNets = /*[[${openNets}]]*/ [];
 
-  // Map initialisieren – Start in der Nordsee als Default
   const map = L.map('map').setView([56, 4], 4);
 
-  // OpenStreetMap Tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // Fallback: wenn keine offenen Netze vorhanden sind,
-  // einen Platzhalter-Marker in der Nordsee setzen
   if (!openNets || openNets.length === 0) {
     L.marker([56.5, 4.0])
       .addTo(map)
       .bindPopup('<strong>Example ghost net</strong><br/>North Sea placeholder');
   } else {
-    // Bounds, um die Karte auf alle Marker zu zoomen
     const bounds = [];
 
     openNets.forEach(net => {
@@ -116,16 +112,20 @@
         const coords = [net.latitude, net.longitude];
         bounds.push(coords);
 
-        const title = net.title || 'Ghost net';
-        const status = net.status || 'OPEN';
+        const id = (net.id != null) ? net.id : '-';
+        const status = net.status || 'REPORTED';
         const reporter = net.reportedBy || 'anonymous';
+        const size = (net.estimatedSizeM2 != null) ? net.estimatedSizeM2 : '-';
+        const assigned = net.assignedSalvagerUsername || 'Unassigned';
 
         const popupHtml =
-          `<strong>${title}</strong><br/>` +
+          `<strong>Ghost net #${id}</strong><br/>` +
           `Lat: ${net.latitude}, Lon: ${net.longitude}<br/>` +
+          `Reported by: ${reporter}<br/>` +
+          `Estimated size (m²): ${size}<br/>` +
           `Status: ${status}<br/>` +
-          `Reported by: ${reporter}<br/><br/>` +
-          `<button type="button" onclick="scrollToNet(${net.id})">Go to net</button>`;
+          `Assigned salvager: ${assigned}<br/><br/>` +
+          `<button type="button" onclick="scrollToNet(${id})">Go to net</button>`;
 
         L.marker(coords)
           .addTo(map)
@@ -138,19 +138,14 @@
     }
   }
 
-  // Scrollt zur Tabellenzeile des Netzes und hebt sie kurz hervor
   window.scrollToNet = function (netId) {
     const rowId = 'net-row-' + netId;
     const row = document.getElementById(rowId);
-    if (!row) {
-      return;
-    }
-    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!row) return;
 
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     row.classList.add('highlight-row');
-    setTimeout(() => {
-      row.classList.remove('highlight-row');
-    }, 2000);
+    setTimeout(() => row.classList.remove('highlight-row'), 2000);
   };
 
 /*]]>*/

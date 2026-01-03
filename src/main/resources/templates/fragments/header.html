@@ -2,13 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
-  <!-- leer; nur für Namespaces -->
+  <!-- empty; only for Namespaces -->
 </head>
 <body>
 
 <header th:fragment="siteHeader">
   <div class="brand">
-    <!-- Nur das Logo ist klickbar -->
+    <!-- Only the logo is clickable -->
     <a th:href="@{/}" class="brand-logo-link">
       <img th:src="@{/img/ghost-net-finder-high-resolution-logo-transparent.png}"
            alt="Ghost Net Finder Logo"
@@ -17,24 +17,21 @@
     <h1>Ghost Net Finder</h1>
   </div>
 
-  <!-- Hauptnavigation: abhängig vom Login-Status -->
+  <!-- Main navigation: depends on login status -->
   <nav>
-    <!-- Übersicht aller Netze (für alle sichtbar) -->
+    <!-- Overview of all nets (visible to all) -->
     <a th:href="@{/nets}">All nets</a>
 
-    <!-- Link zur Karte mit allen offenen Netzen -->
-    <a th:href="@{/nets/map}">Map</a>
-
-    <!-- Meldung eines neuen Netzes (öffentlich erreichbar) -->
+    <!-- Reporting a new net (publicly accessible) -->
     <a th:href="@{/nets/new}">Report new net</a>
 
-    <!-- Links für nicht eingeloggte Nutzer -->
+    <!-- Links for not logged-in users -->
     <span sec:authorize="isAnonymous()">
       <a th:href="@{/login}">Login</a>
       <a th:href="@{/register}">Register</a>
     </span>
 
-    <!-- Bereich für eingeloggte Nutzer -->
+    <!-- Section for logged-in users -->
     <span sec:authorize="isAuthenticated()">
       Signed in as <b sec:authentication="name"></b>
       <a th:href="@{/my-nets}">My assigned nets</a>

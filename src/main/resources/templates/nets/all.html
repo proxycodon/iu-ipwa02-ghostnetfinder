@@ -1,15 +1,11 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
-
 <head>
   <meta charset="UTF-8">
   <title>Ghost Net Finder - All Nets</title>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
-
-  <!-- Syne Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
@@ -19,45 +15,36 @@
 
 <body>
 
-<!-- Gemeinsamer Header -->
-<div th:replace="fragments/header :: siteHeader"></div>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <h2>All ghost nets</h2>
 
-<!-- Zurück-Link zur Startseite -->
 <p><a th:href="@{/}">← Back</a></p>
 
-<!-- Gesamtübersicht aller Netze, unabhängig vom Status -->
 <table>
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th>Coordinates</th>
-        <th>Status</th>
-        <th>Reported by</th>
-        <th>Salvager</th>
-    </tr>
-    </thead>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Coordinates</th>
+    <th>Status</th>
+    <th>Reported by</th>
+    <th>Salvager</th>
+    <th>Reported at</th>
+  </tr>
+  </thead>
 
-    <tbody>
-    <!-- Iteration über alle Netze, bereitgestellt vom AllNetsController -->
-    <tr th:each="n : ${nets}">
-        <td th:text="${n.title}"></td>
-        <td th:text="${n.latitude + ', ' + n.longitude}"></td>
-
-        <!-- Status im Lebenszyklus (REPORTED, PENDING, SALVAGED, LOST) -->
-        <td th:text="${n.status}"></td>
-
-        <!-- Meldende Person oder "anonymous" -->
-        <td th:text="${n.reportedBy}"></td>
-
-        <!-- Zugeordneter Salvager oder "-" falls noch keiner zugeordnet ist -->
-        <td th:text="${n.assignedSalvagerUsername ?: '-'}"></td>
-    </tr>
-    </tbody>
+  <tbody>
+  <tr th:each="n : ${nets}">
+    <td th:text="${n.id}">1001</td>
+    <td th:text="${n.latitude + ', ' + n.longitude}">0, 0</td>
+    <td th:text="${n.status}">REPORTED</td>
+    <td th:text="${n.reportedBy}">anonymous</td>
+    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : '-'}">-</td>
+    <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+  </tr>
+  </tbody>
 </table>
 
-<!-- Hinweis für ausgeloggte Nutzer -->
 <p sec:authorize="isAnonymous()">
   Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.

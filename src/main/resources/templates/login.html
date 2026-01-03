@@ -17,29 +17,29 @@
 </head>
 <body>
 
-<!-- Gemeinsamer Header -->
+<!-- Shared Header -->
 <div th:replace="fragments/header :: siteHeader"></div>
 
 <h2>Sign in</h2>
 
-<!-- Erfolgreiche Registrierung -->
+<!-- Successful registration -->
 <p th:if="${param.registered}" class="success">
   Account created successfully. You can now sign in.
 </p>
 
-<!-- Login-Fehler (Spring Security: ?error) -->
+<!-- Login error (Spring Security: ?error) -->
 <p th:if="${param.error}" class="error">
   Invalid username or password.
 </p>
 
-<!-- Logout-Hinweis (optional, falls konfiguriert) -->
+<!-- Logout notice (optional, if configured) -->
 <p th:if="${param.logout}" class="info">
   You have been signed out.
 </p>
 
 <!--
-  Login-Formular für Spring Security.
-  Verwendet die Standard-Parameter "username" und "password".
+  Login form for Spring Security.
+  Uses the standard parameters "username" and "password".
 -->
 <form th:action="@{/login}" method="post">
   <label>Username<br>

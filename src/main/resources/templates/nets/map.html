@@ -33,7 +33,7 @@
 </head>
 <body>
 
-<!-- Gemeinsamer Header -->
+<!-- Shared Header -->
 <div th:replace="fragments/header :: siteHeader"></div>
 
 <h2>Ghost nets map</h2>
@@ -51,23 +51,23 @@
   crossorigin="">
 </script>
 
-<!-- Net-Daten aus Thymeleaf ins JS schieben -->
+<!-- Net data from Thymeleaf to JS -->
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-  // einfache JS-Array-Repräsentation deiner Netze
+  // simple JS array representation of your nets
   const nets = /*[[${nets}]]*/ [];
 
-  // Map initialisieren (Weltkarte, leicht rausgezoomt)
+  // Initialize map (world map, slightly zoomed out)
   const map = L.map('map').setView([20, 0], 2);
 
-  // OpenStreetMap-Tiles hinzufügen
+  // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // Marker für jedes Netz setzen – wir gehen davon aus, dass GhostNet latitude, longitude, title hat
+  // Set marker for each net – we assume GhostNet has latitude, longitude, title
   nets.forEach(net => {
     if (net.latitude != null && net.longitude != null) {
       const marker = L.marker([net.latitude, net.longitude]).addTo(map);
