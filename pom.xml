@@ -97,7 +97,7 @@
         <artifactId>flyway-maven-plugin</artifactId>
         <version>10.10.0</version>
         <configuration>
-            <url>jdbc:h2:mem:ghostnet;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1</url>
+            <url>jdbc:h2:file:./.localdb/ghostnet;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE</url>
           <user>sa</user>
           <password></password>
         </configuration>
