@@ -12,9 +12,9 @@ public interface GhostNetRepository extends JpaRepository<GhostNet, Long> {
 
     List<GhostNet> findAllByOrderByCreatedAtDesc();
 
-    // Für Startseite: alle Netze mit bestimmtem Status
-    List<GhostNet> findAllByStatus(Status status);
+    // For Homepage: all nets with certain status
+    List<GhostNet> findAllByStatusIn(List<Status> statuses);
 
-    // Optional besser: sortiert ausliefern
+    // Optional better: deliver sorted
     List<GhostNet> findAllByStatusOrderByCreatedAtDesc(Status status);
 }

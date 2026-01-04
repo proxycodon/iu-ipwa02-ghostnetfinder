@@ -6,9 +6,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
 /**
- * Controller für die Startseite ("Ghost Net Finder").
- * Zeigt aktuell alle offenen Netze auf Karte und in einer Liste.
+ * Controller for the Homepage ("Ghost Net Finder").
+ * Shows all currently uncollected nets on the map and in a list.
  */
 @Controller
 public class HomeController {
@@ -20,12 +22,15 @@ public class HomeController {
     }
 
     /**
-     * Startseite: lädt alle Netze mit Status REPORTED
-     * als Basis für Map-Ansicht und Tabelle.
+     * Homepage: loads all nets with status REPORTED and PENDING
+     * as a basis for the map view and table.
      */
     @GetMapping("/")
     String home(Model model) {
-        model.addAttribute("openNets", repo.findAllByStatus(Status.REPORTED));
+        model.addAttribute(
+            "openNets",
+            repo.findAllByStatusIn(List.of(Status.REPORTED, Status.PENDING))
+        );
         return "index";
     }
 }
