@@ -113,25 +113,39 @@ http://localhost:8080/
 
 ---
 
-## 4. Default Users
+## 4. Users and Authentication
 
-On first startup, the application automatically creates demo accounts:
+- **No default login accounts are preconfigured.**
+- Users can register themselves via the application UI.
+- Passwords are securely hashed using BCrypt.
+- Anonymous reporting of ghost nets is supported.
 
-| Username | Password | Role          |
-| -------- | -------- | ------------- |
-| admin    | admin123 | ROLE_ADMIN    |
-| salv     | salv123  | ROLE_SALVAGER |
-| rep      | rep123   | ROLE_REPORTER |
-
-Anonymous reporting is supported.
+For demonstration and reference purposes, **non-login reference users** are seeded in the database and used only to populate example ghost-net data. These accounts are **disabled and cannot be used for authentication**.
 
 ---
 
 ## 5. Database Information
 
-The application uses an H2 in-memory database in PostgreSQL compatibility mode.
-Data is reset on every application restart.
-No external database setup is required for local development.
+- The application uses an **H2 file-based database** in PostgreSQL compatibility mode.
+- The database is stored locally under:
+
+```
+./.localdb/ghostnet
+```
+
+- The schema is managed via **Flyway migrations**.
+- On a fresh setup, the database is initialized with:
+- the full schema
+- deterministic reference users
+- example ghost-net data
+
+To reset the local database during development, stop the application and delete:
+
+```
+./.localdb/ghostnet
+```
+
+Then restart the application.
 
 ---
 

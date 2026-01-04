@@ -5,7 +5,6 @@ import de.ghostnet.domain.repo.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,42 +29,36 @@ public class SecurityConfig {
      */
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                // Always allow static content
-                .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
+    http
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
+            .requestMatchers("/h2-console/**").permitAll()
+            .requestMatchers("/", "/nets", "/nets/new", "/nets/all", "/nets/map",
+                             "/register", "/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/nets").permitAll()
+            .requestMatchers("/nets/claim/**",
+                             "/nets/mark-retrieved/**",
+                             "/nets/mark-lost/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/nets/{id}/contact").authenticated()
+            .requestMatchers("/my-nets").authenticated()
+            .anyRequest().denyAll()
+        )
+        .formLogin(form -> form
+            .loginPage("/login")
+            .defaultSuccessUrl("/", true)
+            .permitAll()
+        )
+        .logout(logout -> logout.permitAll())
+        .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/h2-console/**")
+        )
+        .headers(headers -> headers
+            .frameOptions(frame -> frame.disable())
+        );
 
-                // Public pages (landing page, lists, registration, login, map)
-                .requestMatchers("/", "/nets", "/nets/new", "/nets/all", "/nets/map", "/register", "/login").permitAll()
-
-                // New nets can be reported anonymously
-                .requestMatchers(HttpMethod.POST, "/nets").permitAll()
-
-                // Actions that change the status of a net require login
-                .requestMatchers("/nets/claim/**",
-                                "/nets/mark-retrieved/**",
-                                "/nets/mark-lost/**").authenticated()
-
-                .requestMatchers(HttpMethod.GET, "/nets/{id}/contact").authenticated()
-
-                // Personal overview of claimed nets
-                .requestMatchers("/my-nets").authenticated()
-
-                // Public overall view of all nets (if used)
-                .requestMatchers("/nets/all").permitAll()
-
-                // Everything else is forbidden by default (secure by default)
-                .anyRequest().denyAll()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .permitAll()
-            )
-            .logout(Customizer.withDefaults())
-            .csrf(Customizer.withDefaults());
-
-        return http.build();
+    return http.build();
     }
+
 
 
     /**
