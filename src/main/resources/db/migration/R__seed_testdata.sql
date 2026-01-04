@@ -1,8 +1,8 @@
--- Ghost nets seed data
+-- ------------------------------------------------------------
+-- Ghost nets
 -- IDs are generated automatically (IDENTITY starting at 1001).
--- MERGE is used to keep the seed idempotent.
--- The combination (latitude, longitude) is used as a logical key
--- for test data only.
+-- (latitude, longitude) used as logical key for seed only.
+-- ------------------------------------------------------------
 
 MERGE INTO ghost_net (
   latitude,

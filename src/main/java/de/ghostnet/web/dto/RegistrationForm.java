@@ -1,6 +1,7 @@
 package de.ghostnet.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -24,27 +25,44 @@ public class RegistrationForm {
     @Size(min = 6, max = 100)
     private String confirmPassword;
 
-    public String getUsername() { 
-        return username; 
+    /** Telefonnummer zur Kontaktaufnahme zwischen Bergenden. */
+    @NotBlank
+    @Size(max = 30)
+    @Pattern(
+        regexp = "^[0-9+()\\s\\-/.]{6,30}$",
+        message = "{phone.invalid}"
+    )
+    private String phoneNumber;
+
+    public String getUsername() {
+        return username;
     }
 
-    public void setUsername(String username) { 
-        this.username = username; 
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getPassword() { 
-        return password; 
+    public String getPassword() {
+        return password;
     }
 
-    public void setPassword(String password) { 
-        this.password = password; 
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getConfirmPassword() { 
-        return confirmPassword; 
+    public String getConfirmPassword() {
+        return confirmPassword;
     }
 
-    public void setConfirmPassword(String confirmPassword) { 
-        this.confirmPassword = confirmPassword; 
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

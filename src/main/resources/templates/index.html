@@ -27,15 +27,14 @@
 <!-- Shared Header -->
 <div th:replace="~{fragments/header :: siteHeader}"></div>
 
-<!-- ===== Map with open nets ===== -->
-<h2>Open Nets</h2>
+<!-- Intro text -->
 <p>
-  The map shows all currently open ghost nets. Click a marker to see details and jump to the net in the list below.
+  This map shows all ghost nets that haven't been salvaged yet. Click on a marker to see details and jump to the corresponding position in the list below.
 </p>
 
 <div id="map"></div>
 
-<!-- ===== Table of currently open nets ===== -->
+<!-- Table of currently open nets -->
 <table>
   <thead>
   <tr>
@@ -46,6 +45,7 @@
     <th>Assigned salvager</th>
     <th>Reported by</th>
     <th>Reported at</th>
+    <th>Contact</th>
     <th sec:authorize="isAuthenticated()">Action</th>
   </tr>
   </thead>
@@ -59,6 +59,19 @@
     <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : 'Unassigned'}">Unassigned</td>
     <td th:text="${n.reportedBy}">anonymous</td>
     <td th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+
+    <!-- Contact: never render phone in HTML. Fetch on demand for logged-in users only. -->
+    <td>
+      <span sec:authorize="isAnonymous()">
+        You must be logged in to view contact details.
+      </span>
+
+      <button type="button"
+              sec:authorize="isAuthenticated()"
+              th:attr="onclick=|openContact(${n.id})|">
+        Show contact
+      </button>
+    </td>
 
     <td sec:authorize="isAuthenticated()">
       <form th:action="@{'/nets/claim/' + ${n.id}}" method="post" style="display:inline">
@@ -79,6 +92,17 @@
   Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.
 </p>
+
+<!-- Contact dialog -->
+<dialog id="contactDialog">
+  <h3>Contact</h3>
+  <p><strong id="contactName"></strong></p>
+  <p><a id="contactPhone" href="#"></a></p>
+
+  <form method="dialog">
+    <button>Close</button>
+  </form>
+</dialog>
 
 <!-- Leaflet JS -->
 <script
@@ -149,6 +173,45 @@
   };
 
 /*]]>*/
+</script>
+
+<!-- Contact fetch logic -->
+<script>
+  async function openContact(netId) {
+    try {
+      const res = await fetch(`/nets/${netId}/contact`, {
+        headers: { "Accept": "application/json" }
+      });
+
+      // Depending on your Spring Security setup, anonymous access may redirect to /login.
+      // In that case, fetch will follow and res.ok may still be true with HTML content.
+      // We'll guard by checking content-type as well.
+      const contentType = res.headers.get("content-type") || "";
+
+      if (res.status === 401 || res.status === 403) {
+        alert("You must be logged in to view contact details.");
+        return;
+      }
+
+      if (!res.ok || !contentType.includes("application/json")) {
+        alert("Could not load contact details. Please make sure you are logged in.");
+        return;
+      }
+
+      const data = await res.json();
+
+      document.getElementById("contactName").textContent = data.username || "";
+      const phoneEl = document.getElementById("contactPhone");
+      phoneEl.textContent = data.phoneNumber || "";
+
+      const tel = String(data.phoneNumber || "").replace(/\s+/g, "");
+      phoneEl.href = `tel:${tel}`;
+
+      document.getElementById("contactDialog").showModal();
+    } catch (e) {
+      alert("Network error while loading contact details.");
+    }
+  }
 </script>
 
 </body>

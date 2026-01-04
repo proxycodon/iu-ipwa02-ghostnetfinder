@@ -25,21 +25,32 @@
 <!-- Registration form, bound to RegistrationForm (model attribute "form") -->
 <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
   <label>Username<br>
-    <input type="text" th:field="*{username}" required>
+    <input type="text" th:field="*{username}" required autocomplete="username">
     <!-- Field-specific validation errors for username -->
     <small th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></small>
   </label>
 
   <label>Password<br>
-    <input type="password" th:field="*{password}" required>
+    <input type="password" th:field="*{password}" required autocomplete="new-password">
     <!-- Feldspezifische Validierungsfehler für password -->
     <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
   </label>
 
   <label>Confirm password<br>
-    <input type="password" th:field="*{confirmPassword}" required>
+    <input type="password" th:field="*{confirmPassword}" required autocomplete="new-password">
     <!-- Validierungsfehler (z.B. "Passwords do not match") -->
     <small th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></small>
+  </label>
+
+  <label>Phone number<br>
+    <input type="tel"
+           th:field="*{phoneNumber}"
+           required
+           inputmode="tel"
+           autocomplete="tel"
+           placeholder="+49 151 12345678">
+    <small>Only visible to logged-in users for coordination.</small>
+    <small th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></small>
   </label>
 
   <!-- CSRF token for the POST request -->

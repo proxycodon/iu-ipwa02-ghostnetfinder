@@ -27,11 +27,25 @@ public class UserService {
      * Wirft eine IllegalArgumentException, falls der Benutzername bereits vergeben ist.
      */
     @Transactional
-    public void registerReporter(String username, String rawPassword) {
+    public void registerReporter(String username, String rawPassword, String phoneNumber) {
         if (users.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
-        User u = new User(null, username, encoder.encode(rawPassword), Role.ROLE_REPORTER, true);
+
+        String cleanedPhone = phoneNumber == null ? "" : phoneNumber.trim();
+        if (cleanedPhone.isEmpty()) {
+            throw new IllegalArgumentException("Phone number is required");
+        }
+
+        User u = new User(
+                null,
+                username,
+                encoder.encode(rawPassword),
+                cleanedPhone,
+                Role.ROLE_REPORTER,
+                true
+        );
+
         users.save(u);
     }
 

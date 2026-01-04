@@ -54,7 +54,7 @@ public class RegistrationController {
         }
 
         try {
-            userService.registerReporter(form.getUsername(), form.getPassword());
+            userService.registerReporter(form.getUsername(), form.getPassword(), form.getPhoneNumber());
         } catch (IllegalArgumentException e) {
             // Benutzername bereits vergeben → kontrollierte, konsistente UI-Message via messages.properties
             br.rejectValue("username", "exists");
@@ -62,7 +62,6 @@ public class RegistrationController {
         }
 
         // Nach erfolgreicher Registrierung zur Login-Seite umleiten
-        // Hinweis: model.addAttribute(...) würde beim Redirect verloren gehen.
         return "redirect:/login?registered";
     }
 }

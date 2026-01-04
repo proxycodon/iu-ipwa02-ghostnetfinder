@@ -17,42 +17,44 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
 
 /**
- * Zentrale Security-Konfiguration der Anwendung.
- * Regelt Zugriff auf URLs, Login/Logout und Benutzerauflösung.
+ * Central Security configuration of the application.
+ * Manages access to URLs, login/logout, and user resolution.
  */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     /**
-     * Definiert Zugriffregeln für HTTP-Endpunkte und konfiguriert
-     * Login-Seite, Logout-Verhalten und CSRF-Schutz.
+     * Defines access rules for HTTP endpoints and configures
+     * login page, logout behavior, and CSRF protection.
      */
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                // Statische Inhalte immer erlauben
+                // Always allow static content
                 .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
 
-                // Öffentliche Seiten (Landing Page, Listen, Registrierung, Login, Map)
+                // Public pages (landing page, lists, registration, login, map)
                 .requestMatchers("/", "/nets", "/nets/new", "/nets/all", "/nets/map", "/register", "/login").permitAll()
 
-                // Neue Netze dürfen anonym gemeldet werden
+                // New nets can be reported anonymously
                 .requestMatchers(HttpMethod.POST, "/nets").permitAll()
 
-                // Aktionen, die den Status eines Netzes ändern, erfordern Login
+                // Actions that change the status of a net require login
                 .requestMatchers("/nets/claim/**",
                                 "/nets/mark-retrieved/**",
                                 "/nets/mark-lost/**").authenticated()
 
-                // Persönliche Übersicht der übernommenen Netze
+                .requestMatchers(HttpMethod.GET, "/nets/{id}/contact").authenticated()
+
+                // Personal overview of claimed nets
                 .requestMatchers("/my-nets").authenticated()
 
-                // Öffentliche Gesamtansicht aller Netze (falls genutzt)
+                // Public overall view of all nets (if used)
                 .requestMatchers("/nets/all").permitAll()
 
-                // Alles andere ist standardmäßig verboten (secure by default)
+                // Everything else is forbidden by default (secure by default)
                 .anyRequest().denyAll()
             )
             .formLogin(form -> form
@@ -67,8 +69,8 @@ public class SecurityConfig {
 
 
     /**
-     * Lädt Benutzer aus der Datenbank und mappt sie auf das
-     * UserDetails-Modell von Spring Security.
+     * Loads users from the database and maps them to Spring Security's
+     * UserDetails model.
      */
     @Bean
     UserDetailsService userDetailsService(UserRepository users) {
@@ -89,11 +91,11 @@ public class SecurityConfig {
     }
 
     /**
-     * PasswordEncoder für Hashing und Prüfung von Passwörtern.
-     * Verwendet BCrypt mit Stärke 12 als pragmatischen Standard.
+     * PasswordEncoder for hashing and verifying passwords.
+     * Uses BCrypt with strength 12 as a pragmatic default.
      */
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Perspektivisch ggf. Umstieg auf Argon2
+        return new BCryptPasswordEncoder(12); // Potential future switch to Argon2
     }
 }
