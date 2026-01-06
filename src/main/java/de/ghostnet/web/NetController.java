@@ -69,7 +69,11 @@ public class NetController {
     @PostMapping("/mark-lost/{id}")
     @PreAuthorize("isAuthenticated()")
     public String lost(@PathVariable Long id) {
-        service.markLost(id);
-        return "redirect:/nets";
+        try {
+            service.markLost(id);
+            return "redirect:/nets";
+        } catch (IllegalStateException e) {
+            return "redirect:/nets?error=invalidTransition";
+        }
     }
 }

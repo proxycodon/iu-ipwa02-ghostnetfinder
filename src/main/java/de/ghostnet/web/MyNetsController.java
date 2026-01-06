@@ -7,8 +7,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- * Controller für die persönliche Übersicht eines Salvagers.
- * Zeigt alle Netze, die dem aktuell eingeloggten Benutzer zugeordnet sind.
+ * Controller for the personal overview of a salvager.
+ * Shows all nets assigned to the currently logged-in user.
  */
 @Controller
 public class MyNetsController {
@@ -20,12 +20,12 @@ public class MyNetsController {
     }
 
     /**
-     * Liste aller Netze, die vom aktuellen Benutzer übernommen wurden.
+     * Lists all nets assigned to the currently logged-in user.
      */
     @GetMapping("/my-nets")
     public String myNets(Authentication auth, Model model) {
         String username = auth.getName();
-        model.addAttribute("assignedNets", service.findAssignedTo(username));
+        model.addAttribute("assignedNets", service.findActiveAssignedTo(username));
         return "nets/my-nets";
     }
 }

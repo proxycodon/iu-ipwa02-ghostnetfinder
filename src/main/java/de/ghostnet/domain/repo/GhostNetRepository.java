@@ -8,13 +8,16 @@ import java.util.List;
 
 public interface GhostNetRepository extends JpaRepository<GhostNet, Long> {
 
-    List<GhostNet> findAllByAssignedSalvagerUsername(String username);
-
+    // Global views
     List<GhostNet> findAllByOrderByCreatedAtDesc();
 
-    // For Homepage: all nets with certain status
     List<GhostNet> findAllByStatusIn(List<Status> statuses);
 
-    // Optional better: deliver sorted
-    List<GhostNet> findAllByStatusOrderByCreatedAtDesc(Status status);
+    // Salvager-related views
+    List<GhostNet> findAllByAssignedSalvagerUsername(String username);
+
+    List<GhostNet> findAllByAssignedSalvagerUsernameAndStatusIn(
+            String username,
+            List<Status> statuses
+    );
 }

@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Service-Schicht für Geschäftslogik rund um Geisternetze.
- * Kapselt Statuswechsel und Zugriffe auf das GhostNetRepository.
+ * Service layer for GhostNet business logic.
+ * Owns status transitions and repository access.
  */
 @Service
 @Transactional
@@ -26,8 +26,8 @@ public class GhostNetService {
     }
 
     /**
-     * Legt ein neues Geisternetz an.
-     * Falls kein Benutzer übergeben wird, wird der Report als "anonymous" gespeichert.
+     * Creates a new ghost net report.
+     * If no reporter username is provided, the report is stored as "anonymous".
      */
     public GhostNet create(GhostNet net, String reporterUsername) {
         net.setStatus(Status.REPORTED);
@@ -37,17 +37,20 @@ public class GhostNetService {
     }
 
     /**
-     * Markiert ein Netz als übernommen (PENDING) und trägt den zuständigen Salvager ein.
-     * Beim ersten Claim wird ein reiner Reporter automatisch zur Rolle SALVAGER hochgestuft.
+     * Claims a net (sets status to PENDING and assigns the salvager).
+     * On first claim, a REPORTER is auto-promoted to SALVAGER (self-service).
      */
     public void claim(Long id, String username) {
         GhostNet net = repo.findById(id).orElseThrow();
 
+        // Only REPORTED nets can be claimed, and only if still unassigned
+        if (net.getStatus() != Status.REPORTED) {
+            throw new IllegalStateException("Only REPORTED nets can be claimed");
+        }
         if (net.getAssignedSalvagerUsername() != null) {
             throw new IllegalStateException("Net already claimed");
         }
 
-        // Selbstservice: Rolle bei erstem Claim von REPORTER → SALVAGER anheben
         userService.promoteToSalvagerIfReporter(username);
 
         net.setAssignedSalvagerUsername(username);
@@ -55,36 +58,53 @@ public class GhostNetService {
     }
 
     /**
-     * Markiert ein Netz als geborgen.
-     * Nur der zugeordnete Salvager darf den Status auf SALVAGED setzen.
+     * Marks a net as salvaged (SALVAGED).
+     * Only the assigned salvager may complete the retrieval.
      */
     public void markRetrieved(Long id, String username) {
         GhostNet net = repo.findById(id).orElseThrow();
+
         if (!username.equals(net.getAssignedSalvagerUsername())) {
             throw new AccessDeniedException("Not your assigned net.");
         }
+
+        // Only a currently assigned (PENDING) net can be marked as salvaged
+        if (net.getStatus() != Status.PENDING) {
+            throw new IllegalStateException("Only PENDING nets can be marked as salvaged");
+        }
+
         net.setStatus(Status.SALVAGED);
     }
 
-    /**
-     * Markiert ein Netz als verschollen, z.B. wenn es vor Ort nicht mehr auffindbar ist.
-     */
+    //Marks a net as lost (LOST) if it cannot be found on site.
     public void markLost(Long id) {
         GhostNet net = repo.findById(id).orElseThrow();
+
+        // Only "open" nets may become LOST
+        if (net.getStatus() != Status.REPORTED && net.getStatus() != Status.PENDING) {
+            throw new IllegalStateException("Only REPORTED or PENDING nets can be marked as lost");
+        }
+
         net.setStatus(Status.LOST);
+        // Intentionally keep assignedSalvagerUsername for audit purposes.
     }
 
-    /**
-     * Liefert alle Netze, die einem bestimmten Salvager zugeordnet sind.
-     * Wird z.B. für die persönliche "My nets"-Ansicht verwendet.
-     */
+    //Returns all nets assigned to a given salvager (any status).
     public List<GhostNet> findAssignedTo(String username) {
         return repo.findAllByAssignedSalvagerUsername(username);
     }
 
+    
+    // Returns only "active" assigned nets for a salvager.
+    public List<GhostNet> findActiveAssignedTo(String username) {
+        return repo.findAllByAssignedSalvagerUsernameAndStatusIn(
+                username,
+                List.of(Status.PENDING)
+        );
+    }
+
     /**
-     * Liefert alle Netze, absteigend nach Erstellungszeit sortiert.
-     * Grundlage für die globale Gesamtansicht.
+     * Returns all nets sorted by creation date (descending).
      */
     public List<GhostNet> findAll() {
         return repo.findAllByOrderByCreatedAtDesc();
