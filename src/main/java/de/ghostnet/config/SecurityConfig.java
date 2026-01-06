@@ -15,80 +15,91 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
-/**
- * Central Security configuration of the application.
- * Manages access to URLs, login/logout, and user resolution.
- */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    /**
-     * Defines access rules for HTTP endpoints and configures
-     * login page, logout behavior, and CSRF protection.
-     */
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            .requestMatchers("/", "/nets", "/nets/new", "/nets/all", "/nets/map",
-                             "/register", "/login").permitAll()
-            .requestMatchers(HttpMethod.POST, "/nets").permitAll()
-            .requestMatchers("/nets/claim/**",
-                             "/nets/mark-retrieved/**",
-                             "/nets/mark-lost/**").authenticated()
-            .requestMatchers(HttpMethod.GET, "/nets/{id}/contact").authenticated()
-            .requestMatchers("/my-nets").authenticated()
-            .anyRequest().denyAll()
-        )
-        .formLogin(form -> form
-            .loginPage("/login")
-            .defaultSuccessUrl("/", true)
-            .permitAll()
-        )
-        .logout(logout -> logout.permitAll())
-        .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/h2-console/**")
-        )
-        .headers(headers -> headers
-            .frameOptions(frame -> frame.disable())
+
+        http.authorizeHttpRequests(auth -> auth
+                // Static assets
+                .requestMatchers("/css/**", "/img/**", "/js/**", "/favicon.ico").permitAll()
+
+                // Dev-only console (ok for prototype)
+                .requestMatchers("/h2-console/**").permitAll()
+
+                // Public pages (robust: include /** to avoid trailing-slash issues)
+                .requestMatchers("/", "/login", "/login/**", "/register", "/register/**").permitAll()
+
+                // Public nets pages
+                .requestMatchers(HttpMethod.GET,
+                        "/nets", "/nets/",
+                        "/nets/new",
+                        "/nets/all",
+                        "/nets/map"
+                ).permitAll()
+
+                // Reporting a new net (anonymous allowed)
+                .requestMatchers(HttpMethod.POST, "/nets").permitAll()
+
+                // Authenticated actions
+                .requestMatchers(HttpMethod.POST,
+                        "/nets/claim/**",
+                        "/nets/mark-retrieved/**",
+                        "/nets/mark-lost/**"
+                ).authenticated()
+
+                // Contact endpoint: Spring Security patterns do NOT support {id}
+                .requestMatchers(HttpMethod.GET, "/nets/*/contact").authenticated()
+
+                // Personal page
+                .requestMatchers("/my-nets").authenticated()
+
+                // Everything else locked down
+                .anyRequest().denyAll()
         );
 
-    return http.build();
+        http.formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
+                .permitAll()
+        );
+
+        http.logout(logout -> logout.permitAll());
+
+        http.csrf(csrf -> csrf
+                // Allow H2 console frames + posts
+                .ignoringRequestMatchers("/h2-console/**")
+        );
+
+        http.headers(headers -> headers
+                .frameOptions(frame -> frame.disable())
+        );
+
+        return http.build();
     }
 
-
-
-    /**
-     * Loads users from the database and maps them to Spring Security's
-     * UserDetails model.
-     */
     @Bean
     UserDetailsService userDetailsService(UserRepository users) {
         return username -> {
             User u = users.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
             return new org.springframework.security.core.userdetails.User(
-                u.getUsername(),
-                u.getPassword(),
-                u.isEnabled(),
-                true,   // accountNonExpired
-                true,   // credentialsNonExpired
-                true,   // accountNonLocked
-                List.of(new SimpleGrantedAuthority(u.getRole().name()))
+                    u.getUsername(),
+                    u.getPassword(),
+                    u.isEnabled(),
+                    true,
+                    true,
+                    true,
+                    List.of(new SimpleGrantedAuthority(u.getRole().name()))
             );
         };
     }
 
-    /**
-     * PasswordEncoder for hashing and verifying passwords.
-     * Uses BCrypt with strength 12 as a pragmatic default.
-     */
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Potential future switch to Argon2
+        return new BCryptPasswordEncoder(12);
     }
 }

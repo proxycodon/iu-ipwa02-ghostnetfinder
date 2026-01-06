@@ -5,44 +5,51 @@
   <meta charset="UTF-8">
   <title>Ghost Net Finder - Create account</title>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" th:href="@{/img/favicon.ico}">
-
-  <!-- Syne Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 
-<!-- Shared Header -->
-<div th:replace="fragments/header :: siteHeader"></div>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
 
 <h2>Create account</h2>
 
-<!-- Registration form, bound to RegistrationForm (model attribute "form") -->
 <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
-  <label>Username<br>
+
+  <!-- Global form error summary (MUST be inside th:object context) -->
+  <div th:if="${#fields.hasAnyErrors()}" class="error">
+    Please fix the errors highlighted below.
+  </div>
+
+  <label>
+    Username<br>
     <input type="text" th:field="*{username}" required autocomplete="username">
-    <!-- Field-specific validation errors for username -->
-    <small th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></small>
   </label>
+  <div th:if="${#fields.hasErrors('username')}" class="error">
+    <span th:errors="*{username}"></span>
+  </div>
 
-  <label>Password<br>
+  <label>
+    Password<br>
     <input type="password" th:field="*{password}" required autocomplete="new-password">
-    <!-- Feldspezifische Validierungsfehler für password -->
-    <small th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
   </label>
+  <div th:if="${#fields.hasErrors('password')}" class="error">
+    <span th:errors="*{password}"></span>
+  </div>
 
-  <label>Confirm password<br>
+  <label>
+    Confirm password<br>
     <input type="password" th:field="*{confirmPassword}" required autocomplete="new-password">
-    <!-- Validierungsfehler (z.B. "Passwords do not match") -->
-    <small th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></small>
   </label>
+  <div th:if="${#fields.hasErrors('confirmPassword')}" class="error">
+    <span th:errors="*{confirmPassword}"></span>
+  </div>
 
-  <label>Phone number<br>
+  <label>
+    Phone number<br>
     <input type="tel"
            th:field="*{phoneNumber}"
            required
@@ -50,16 +57,23 @@
            autocomplete="tel"
            placeholder="+49 151 12345678">
     <small>Only visible to logged-in users for coordination.</small>
-    <small th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></small>
   </label>
+  <div th:if="${#fields.hasErrors('phoneNumber')}" class="error">
+    <span th:errors="*{phoneNumber}"></span>
+  </div>
 
-  <!-- CSRF token for the POST request -->
   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
   <button type="submit">Create account</button>
 </form>
 
-<p>Already have an account? <a th:href="@{/login}">Sign in</a></p>
-<p><a th:href="@{/}">Back to home</a></p>
+<p>
+  Already have an account?
+  <a th:href="@{/login}">Sign in</a>
+</p>
+
+<p>
+  <a th:href="@{/}">Back to home</a>
+</p>
 
 </body>
 </html>
