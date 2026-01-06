@@ -1,17 +1,17 @@
 package de.ghostnet.domain.model;
 
 /**
- * Rollenmodell für Benutzerkonten.
- * Steuert, welche Aktionen in der Anwendung erlaubt sind.
+ * Role model for user accounts.
+ * Controls which actions are allowed in the application.
  */
 public enum Role {
 
-    /** Darf Netze melden, aber keine Bergeinsätze verwalten. */
+    /** May report nets, but not manage salvage operations. */
     ROLE_REPORTER,
 
-    /** Darf Netze übernehmen (claimen) und als geborgen melden. */
+    /** May claim nets and mark them as salvaged. */
     ROLE_SALVAGER,
 
-    /** Administrativer Zugriff, spätere Erweiterungen möglich. */
+    /** Admin access, later extensions possible. */
     ROLE_ADMIN
 }

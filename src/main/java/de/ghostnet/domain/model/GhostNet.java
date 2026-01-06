@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * JPA-Entität für ein gemeldetes Geisternetz.
- * Hält Positionsdaten, Status und Metadaten zur Nachverfolgung.
+ * JPA-Entity for a reported ghost net.
+ * Holds position data, status, and metadata for tracking.
  */
 @Entity
 @Table(name = "ghost_net")
@@ -18,42 +18,42 @@ public class GhostNet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Geographische Breite des Fundortes. */
+    /** Geographic latitude of the location. */
     @NotNull
     @Column(nullable = false, precision = 9, scale = 6)
     private BigDecimal latitude;
 
-    /** Geographische Länge des Fundortes. */
+    /** Geographic longitude of the location. */
     @NotNull
     @Column(nullable = false, precision = 9, scale = 6)
     private BigDecimal longitude;
 
-    /** (Optionale) grobe Flächenangabe des Netzes in Quadratmetern. */
+    /** Rough estimated size of the net in square meters. */
     @Column(name = "estimated_size_m2", precision = 10, scale = 2)
     private BigDecimal estimatedSizeM2;
 
-    /** Aktueller Bearbeitungsstatus des Netzes (REPORTED, PENDING, SALVAGED, LOST). */
+    /** Current processing status of the net (REPORTED, PENDING, SALVAGED, LOST). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status = Status.REPORTED;
 
-    /** Benutzername der Person/Organisation, die das Netz übernommen hat (optional). */
+    /** Username of the person/organization assigned to the net. */
     @Column(name = "assigned_salvager_username", length = 100)
     private String assignedSalvagerUsername;
 
-    /** Benutzername der meldenden Person oder "anonymous" für anonyme Meldungen. */
+    /** Username of the person who reported the net or "anonymous" for anonymous reports. */
     @Column(name = "reported_by_username", nullable = false, length = 100)
     private String reportedBy = "anonymous";
 
-    /** Optimistische Sperre, um parallele Updates aufzulösen. */
+    /** Optimistic lock to resolve concurrent updates. */
     @Version
     private long version;
 
-    /** Zeitstempel der Erstellung (UTC). */
+    /** Timestamp of creation (UTC). */
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    /** Zeitstempel der letzten Änderung (UTC). */
+    /** Timestamp of last update (UTC). */
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 

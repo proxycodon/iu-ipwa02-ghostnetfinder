@@ -1,19 +1,19 @@
 package de.ghostnet.domain.model;
 
 /**
- * Lebenszyklus eines Geisternetzes im System.
+ * Lifecycle of a ghost net in the system.
  */
 public enum Status {
 
-    /** Netz wurde gemeldet, aber noch keinem Bergungsteam zugeordnet. */
+    /** Net was reported but not yet assigned to a salvage team. */
     REPORTED,
 
-    /** Netz wurde von einem Salvager übernommen, Bergung ist geplant oder läuft. */
+    /** Net was claimed by a salvager, salvage is planned or in progress. */
     PENDING,
 
-    /** Netz wurde erfolgreich geborgen. */
+    /** Net was successfully salvaged. */
     SALVAGED,
 
-    /** Netz gilt als verschollen bzw. vor Ort nicht mehr auffindbar. */
+    /** Net is considered lost or no longer findable on site. */
     LOST
 }

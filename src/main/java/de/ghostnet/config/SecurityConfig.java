@@ -36,8 +36,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,
                         "/nets", "/nets/",
                         "/nets/new",
-                        "/nets/all",
-                        "/nets/map"
+                        "/nets/all"
                 ).permitAll()
 
                 // Reporting a new net (anonymous allowed)
