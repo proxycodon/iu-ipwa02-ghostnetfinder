@@ -9,10 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Service layer for GhostNet business logic.
- * Owns status transitions and repository access.
- */
+// Service layer for GhostNet business logic
 @Service
 @Transactional
 public class GhostNetService {
@@ -25,25 +22,18 @@ public class GhostNetService {
         this.userService = userService;
     }
 
-    /**
-     * Creates a new ghost net report.
-     * If no reporter username is provided, the report is stored as "anonymous".
-     */
+    // Creates a new ghost net entry. Always starts as REPORTED and unassigned
     public GhostNet create(GhostNet net, String reporterUsername) {
         net.setStatus(Status.REPORTED);
         net.setAssignedSalvagerUsername(null);
-        net.setReportedBy(reporterUsername != null ? reporterUsername : "anonymous");
+        net.setReportedBy((reporterUsername != null && !reporterUsername.isBlank()) ? reporterUsername : "anonymous");
         return repo.save(net);
     }
 
-    /**
-     * Claims a net (sets status to PENDING and assigns the salvager).
-     * On first claim, a REPORTER is auto-promoted to SALVAGER (self-service).
-     */
+    // Claims a net: REPORTED -> PENDING
     public void claim(Long id, String username) {
-        GhostNet net = repo.findById(id).orElseThrow();
+        GhostNet net = load(id);
 
-        // Only REPORTED nets can be claimed, and only if still unassigned
         if (net.getStatus() != Status.REPORTED) {
             throw new IllegalStateException("Only REPORTED nets can be claimed");
         }
@@ -57,45 +47,39 @@ public class GhostNetService {
         net.setStatus(Status.PENDING);
     }
 
-    /**
-     * Marks a net as salvaged (SALVAGED).
-     * Only the assigned salvager may complete the retrieval.
-     */
+    // Marks a net as salvaged: PENDING -> SALVAGED
     public void markRetrieved(Long id, String username) {
-        GhostNet net = repo.findById(id).orElseThrow();
+        GhostNet net = load(id);
 
-        if (!username.equals(net.getAssignedSalvagerUsername())) {
-            throw new AccessDeniedException("Not your assigned net.");
-        }
-
-        // Only a currently assigned (PENDING) net can be marked as salvaged
         if (net.getStatus() != Status.PENDING) {
             throw new IllegalStateException("Only PENDING nets can be marked as salvaged");
+        }
+        if (net.getAssignedSalvagerUsername() == null || !username.equals(net.getAssignedSalvagerUsername())) {
+            throw new AccessDeniedException("Only the assigned salvager can mark this net as salvaged");
         }
 
         net.setStatus(Status.SALVAGED);
     }
 
-    //Marks a net as lost (LOST) if it cannot be found on site.
+    // Marks a net as lost: REPORTED|PENDING -> LOST
     public void markLost(Long id) {
-        GhostNet net = repo.findById(id).orElseThrow();
+        GhostNet net = load(id);
 
-        // Only "open" nets may become LOST
         if (net.getStatus() != Status.REPORTED && net.getStatus() != Status.PENDING) {
             throw new IllegalStateException("Only REPORTED or PENDING nets can be marked as lost");
         }
 
         net.setStatus(Status.LOST);
-        // Intentionally keep assignedSalvagerUsername for audit purposes.
     }
 
-    //Returns all nets assigned to a given salvager (any status).
+    // Returns all nets assigned to a given salvager (all statuses)
+    @Transactional(readOnly = true)
     public List<GhostNet> findAssignedTo(String username) {
         return repo.findAllByAssignedSalvagerUsername(username);
     }
 
-    
-    // Returns only "active" assigned nets for a salvager.
+    // Returns only active assigned (PENDING) nets for a salvager
+    @Transactional(readOnly = true)
     public List<GhostNet> findActiveAssignedTo(String username) {
         return repo.findAllByAssignedSalvagerUsernameAndStatusIn(
                 username,
@@ -103,10 +87,13 @@ public class GhostNetService {
         );
     }
 
-    /**
-     * Returns all nets sorted by creation date (descending).
-     */
+    // Returns all nets sorted by creation date (descending)
+    @Transactional(readOnly = true)
     public List<GhostNet> findAll() {
         return repo.findAllByOrderByCreatedAtDesc();
+    }
+
+    private GhostNet load(Long id) {
+        return repo.findById(id).orElseThrow();
     }
 }
