@@ -2,16 +2,14 @@ package de.ghostnet.web;
 
 import de.ghostnet.domain.model.Status;
 import de.ghostnet.domain.repo.GhostNetRepository;
+import de.ghostnet.web.dto.GhostNetViewDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-/**
- * Controller for the Homepage ("Ghost Net Finder").
- * Shows all currently uncollected nets on the map and in a list.
- */
+// Homepage controller (map + table for "open" nets)
 @Controller
 public class HomeController {
 
@@ -21,16 +19,17 @@ public class HomeController {
         this.repo = repo;
     }
 
-    /**
-     * Homepage: loads all nets with status REPORTED and PENDING
-     * as a basis for the map view and table.
-     */
+    // Homepage: show only "open" nets (REPORTED + PENDING) on map and in table
     @GetMapping("/")
-    String home(Model model) {
-        model.addAttribute(
-            "openNets",
-            repo.findAllByStatusIn(List.of(Status.REPORTED, Status.PENDING))
-        );
+    public String home(Model model) {
+        var openNets = repo.findAllByStatusIn(List.of(Status.REPORTED, Status.PENDING));
+
+        // Convert entities to view DTOs so Thymeleaf can use precomputed labels/flags
+        var openNetDtos = openNets.stream()
+                .map(GhostNetViewDto::new)
+                .toList();
+
+        model.addAttribute("openNets", openNetDtos);
         return "index";
     }
 }

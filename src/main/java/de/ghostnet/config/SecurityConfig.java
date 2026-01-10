@@ -55,6 +55,9 @@ public class SecurityConfig {
                 // Personal page
                 .requestMatchers("/my-nets").authenticated()
 
+                // Error page
+                .requestMatchers("/error").permitAll()
+
                 // Everything else locked down
                 .anyRequest().denyAll()
         );

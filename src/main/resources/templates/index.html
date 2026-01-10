@@ -38,7 +38,7 @@
     <th>Coordinates</th>
     <th>Estimated size (m²)</th>
     <th>Status</th>
-    <th>Assigned salvager</th>
+    <th>Salvager</th>
     <th>Reported by</th>
     <th>Reported at</th>
     <th>Contact</th>
@@ -49,28 +49,36 @@
   <tbody>
   <tr th:each="n : ${openNets}"
       th:id="${'net-row-' + n.id}">
+
     <td th:text="${n.id}">id</td>
-    <td th:text="${n.latitude + ', ' + n.longitude}">-</td>
-    <td th:text="${n.estimatedSizeM2 != null ? n.estimatedSizeM2 : '-'}">-</td>
+    <td th:text="${n.coordinatesLabel}">-</td>
+    <td th:text="${n.estimatedSizeLabel}">-</td>
     <td th:text="${n.status}">REPORTED</td>
-    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : 'Unassigned'}">Unassigned</td>
+    <td th:text="${n.salvagerLabel}">Unassigned</td>
     <td th:text="${n.reportedBy}">anonymous</td>
     <td th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
 
+    <!-- Contact: only meaningful when a salvager is assigned -->
     <td>
       <span sec:authorize="isAnonymous()">
         You must be logged in to view contact details.
       </span>
 
-      <button type="button"
-              sec:authorize="isAuthenticated()"
-              th:attr="onclick=|openContact(${n.id})|">
-        Show contact
-      </button>
+      <span sec:authorize="isAuthenticated()">
+        <span th:if="${!n.hasSalvager}">
+          No salvager assigned yet.
+        </span>
+
+        <button type="button"
+                th:if="${n.hasSalvager}"
+                th:attr="onclick=|openContact(${n.id})|">
+          Show contact
+        </button>
+      </span>
     </td>
 
     <td sec:authorize="isAuthenticated()">
-      <form th:if="${n.status.name() == 'REPORTED' and n.assignedSalvagerUsername == null}"
+      <form th:if="${n.claimable}"
             th:action="@{'/nets/claim/' + ${n.id}}"
             method="post"
             style="display:inline">
@@ -78,7 +86,7 @@
         <button type="submit">Claim</button>
       </form>
 
-      <form th:if="${n.status.name() == 'REPORTED' or n.status.name() == 'PENDING'}"
+      <form th:if="${n.markLostAllowed}"
             th:action="@{'/nets/mark-lost/' + ${n.id}}"
             method="post"
             style="display:inline">
@@ -86,6 +94,7 @@
         <button type="submit">Mark as lost</button>
       </form>
     </td>
+
   </tr>
   </tbody>
 </table>
@@ -153,7 +162,8 @@
       }
 
       if (res.status === 404) {
-        alert("No contact available for this net.");
+        // This can happen if a net is open but has no assigned salvager yet.
+        alert("No contact available for this net yet.");
         return;
       }
 

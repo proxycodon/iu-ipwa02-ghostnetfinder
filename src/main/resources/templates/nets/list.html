@@ -23,6 +23,7 @@
   <tr>
     <th>ID</th>
     <th>Coordinates</th>
+    <th>Estimated size (m²)</th>
     <th>Status</th>
     <th>Reported by</th>
     <th>Salvager</th>
@@ -36,24 +37,35 @@
   <tr th:each="n : ${nets}">
     <td th:text="${n.id}">1001</td>
     <td th:text="${n.latitude + ', ' + n.longitude}">0, 0</td>
+    <td th:text="${n.estimatedSizeM2 != null ? n.estimatedSizeM2 : '-'}">-</td>
     <td th:text="${n.status}">REPORTED</td>
     <td th:text="${n.reportedBy}">anonymous</td>
-    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : '-'}">-</td>
+    <td th:text="${n.salvagerLabel}">Unassigned</td>
     <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
 
-    <!-- Contact: fetch on demand for logged-in users only -->
+    <!-- Contact column -->
     <td>
+      <!-- Not logged in -->
       <span sec:authorize="isAnonymous()">
         You must be logged in to view contact details.
       </span>
 
+      <!-- Logged in, but no salvager assigned -->
+      <span sec:authorize="isAuthenticated()"
+            th:if="${n.assignedSalvagerUsername == null}">
+        No contact available
+      </span>
+
+      <!-- Logged in, salvager assigned -->
       <button type="button"
               sec:authorize="isAuthenticated()"
+              th:if="${n.assignedSalvagerUsername != null}"
               th:attr="onclick=|openContact(${n.id})|">
         Show contact
       </button>
     </td>
 
+    <!-- Actions -->
     <td sec:authorize="isAuthenticated()">
       <form th:if="${n.status.name() == 'REPORTED' and n.assignedSalvagerUsername == null}"
             th:action="@{'/nets/claim/' + ${n.id}}"
@@ -70,19 +82,18 @@
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit">Mark as lost</button>
       </form>
-
-
     </td>
   </tr>
   </tbody>
 </table>
 
 <p sec:authorize="isAnonymous()">
-  Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
+  Want to help recover ghost nets?
+  <a th:href="@{/login}">Log in</a> or
   <a th:href="@{/register}">create an account</a> to claim nets.
 </p>
 
-<!-- Contact dialog (same as index.html / all.html) -->
+<!-- Contact dialog -->
 <dialog id="contactDialog">
   <h3>Contact</h3>
   <p><strong id="contactName"></strong></p>
@@ -129,7 +140,7 @@
 
       document.getElementById("contactDialog").showModal();
     } catch (e) {
-      alert("Network error while loading contact details.");
+      alert("Unable to load contact details.");
     }
   }
 </script>

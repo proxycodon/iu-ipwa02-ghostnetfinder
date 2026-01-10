@@ -2,6 +2,7 @@ package de.ghostnet.web;
 
 import de.ghostnet.domain.model.GhostNet;
 import de.ghostnet.service.GhostNetService;
+import de.ghostnet.web.dto.GhostNetViewDto;
 import jakarta.validation.Valid;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Collectors;
 
 // Web controller for ghost net CRUD/actions
 @Controller
@@ -25,7 +28,11 @@ public class NetController {
     // List all nets (any status), newest first
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("nets", service.findAll());
+        model.addAttribute("nets",
+                service.findAll().stream()
+                        .map(GhostNetViewDto::new)
+                        .collect(Collectors.toList())
+        );
         return "nets/list";
     }
 

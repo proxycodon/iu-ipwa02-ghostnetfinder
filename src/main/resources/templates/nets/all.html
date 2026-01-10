@@ -40,17 +40,26 @@
     <td th:text="${n.latitude + ', ' + n.longitude}">0, 0</td>
     <td th:text="${n.status}">REPORTED</td>
     <td th:text="${n.reportedBy}">anonymous</td>
-    <td th:text="${n.assignedSalvagerUsername != null ? n.assignedSalvagerUsername : '-'}">-</td>
-    <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+    <td th:text="${n.salvagerLabel}">Unassigned</td>
+    <td th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
 
-    <!-- Contact: fetch on demand for logged-in users only -->
+    <!-- Contact column -->
     <td>
+      <!-- Not logged in -->
       <span sec:authorize="isAnonymous()">
         You must be logged in to view contact details.
       </span>
 
+      <!-- Logged in, but no salvager assigned -->
+      <span sec:authorize="isAuthenticated()"
+            th:if="${n.assignedSalvagerUsername == null}">
+        No contact available
+      </span>
+
+      <!-- Logged in, salvager assigned -->
       <button type="button"
               sec:authorize="isAuthenticated()"
+              th:if="${n.assignedSalvagerUsername != null}"
               th:attr="onclick=|openContact(${n.id})|">
         Show contact
       </button>
@@ -60,11 +69,12 @@
 </table>
 
 <p sec:authorize="isAnonymous()">
-  Want to help recover ghost nets? <a th:href="@{/login}">Log in</a> or
-  <a th:href="@{/register}">create an account</a> to claim nets.
+  Want to help recover ghost nets?
+  <a th:href="@{/login}">Log in</a> or
+  <a th:href="@{/register}">create an account</a>.
 </p>
 
-<!-- Contact dialog (same as on index.html) -->
+<!-- Contact dialog -->
 <dialog id="contactDialog">
   <h3>Contact</h3>
   <p><strong id="contactName"></strong></p>
@@ -94,6 +104,7 @@
         return;
       }
 
+      // Guard against HTML/redirects and any non-JSON response
       if (!res.ok || !contentType.includes("application/json")) {
         alert(`Could not load contact details (HTTP ${res.status}).`);
         return;
@@ -111,7 +122,7 @@
 
       document.getElementById("contactDialog").showModal();
     } catch (e) {
-      alert("Network error while loading contact details.");
+      alert("Could not load contact details.");
     }
   }
 </script>
